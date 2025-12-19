@@ -1,20 +1,17 @@
 import React, { useEffect, useState, useContext } from "react";
 import { UserContext } from "../Contexts/UserContext";
-import { FaTrash } from "react-icons/fa";
-import { FaClock, FaCheckCircle, FaCog, FaTruck, FaBoxOpen, FaTimesCircle } from "react-icons/fa";
-
+import { FaTrash, FaClock, FaCheckCircle, FaCog, FaTruck, FaBoxOpen, FaTimesCircle } from "react-icons/fa";
 
 function MyOrdersPage() {
   const { user } = useContext(UserContext);
   const [orders, setOrders] = useState([]);
 
-  //Load orders
+  // Load orders
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const res = await fetch("http://localhost:5000/orders");
         const data = await res.json();
-        // Filter only this user's orders
         setOrders(data.filter(order => order.user_id === user.id));
       } catch (err) {
         console.error("Error fetching orders:", err);
@@ -23,7 +20,7 @@ function MyOrdersPage() {
     fetchOrders();
   }, [user.id]);
 
-  // Cancel order (only if pending or confirmed)
+  // Cancel order
   const handleCancelOrder = async (orderId) => {
     try {
       const res = await fetch(`http://localhost:5000/orders/${orderId}`, {
@@ -42,56 +39,56 @@ function MyOrdersPage() {
     }
   };
 
-  //Status timeline component
-const StatusTimeline = ({ status }) => {
-  const steps = [
-    { key: "pending", label: "Pending", icon: <FaClock /> },
-    { key: "confirmed", label: "Confirmed", icon: <FaCheckCircle /> },
-    { key: "processing", label: "Processing", icon: <FaCog /> },
-    { key: "shipped", label: "Shipped", icon: <FaTruck /> },
-    { key: "delivered", label: "Delivered", icon: <FaBoxOpen /> },
-  ];
+  // Status timeline
+  const StatusTimeline = ({ status }) => {
+    const steps = [
+      { key: "pending", label: "Pending", icon: <FaClock /> },
+      { key: "confirmed", label: "Confirmed", icon: <FaCheckCircle /> },
+      { key: "processing", label: "Processing", icon: <FaCog /> },
+      { key: "shipped", label: "Shipped", icon: <FaTruck /> },
+      { key: "delivered", label: "Delivered", icon: <FaBoxOpen /> },
+    ];
+
+    return (
+      <div className="flex flex-wrap items-center gap-4 mt-4">
+        {steps.map((step, idx) => {
+          const isActive = steps.findIndex(s => s.key === status) >= idx;
+          return (
+            <React.Fragment key={step.key}>
+              <div
+                className={`flex items-center gap-2 text-xs sm:text-sm font-medium ${
+                  isActive ? "text-blue-600" : "text-gray-400"
+                }`}
+              >
+                {step.icon}
+                <span>{step.label}</span>
+              </div>
+              {idx < steps.length - 1 && (
+                <span className="flex-1 h-0.5 bg-gray-300"></span>
+              )}
+            </React.Fragment>
+          );
+        })}
+        {status === "cancelled" && (
+          <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-red-600">
+            <FaTimesCircle />
+            <span>Cancelled</span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <div className="flex items-center gap-4 mt-4">
-      {steps.map((step, idx) => {
-        const isActive = steps.findIndex(s => s.key === status) >= idx;
-        return (
-          <React.Fragment key={step.key}>
-            <div
-              className={`flex items-center gap-2 text-xs font-medium ${
-                isActive ? "text-blue-600" : "text-gray-400"
-              }`}
-            >
-              {step.icon}
-              <span>{step.label}</span>
-            </div>
-            {idx < steps.length - 1 && (
-              <span className="flex-1 h-0.5 bg-gray-300"></span>
-            )}
-          </React.Fragment>
-        );
-      })}
-      {status === "cancelled" && (
-        <div className="flex items-center gap-2 text-xs font-medium text-red-600">
-          <FaTimesCircle />
-          <span>Cancelled</span>
-        </div>
-      )}
-    </div>
-  );
-};
-
-  return (
-    <div className="max-w-5xl mx-auto p-8">
-      <h1 className="text-3xl font-bold text-blue-900 mb-6">My Orders</h1>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <h1 className="text-2xl sm:text-3xl font-bold text-blue-900 mb-6 text-center">My Orders</h1>
       {orders.length === 0 ? (
-        <p className="text-gray-600">You have no confirmed orders yet.</p>
+        <p className="text-gray-600 text-center">You have no confirmed orders yet.</p>
       ) : (
         <div className="space-y-6">
           {orders.map(order => (
-            <div key={order.id} className="bg-white shadow rounded p-6 relative">
-              {/*Trash icon top-right (only for cancelled orders) */}
+            <div key={order.id} className="bg-white shadow rounded p-4 sm:p-6 relative">
+              {/* Trash icon for cancelled orders */}
               {order.status === "cancelled" && (
                 <button
                   onClick={async () => {
@@ -118,30 +115,30 @@ const StatusTimeline = ({ status }) => {
                 </button>
               )}
 
-              <h2 className="text-xl font-semibold mb-2">
+              <h2 className="text-lg sm:text-xl font-semibold mb-2">
                 Order #{order.user_order_number}
               </h2>
 
-              <p className="text-gray-600 mb-2">
+              <p className="text-gray-600 mb-2 text-sm sm:text-base">
                 <strong>Date:</strong>{" "}
                 {new Date(order.created_at).toLocaleString()}
               </p>
-              <p className="text-gray-600 mb-2">
+              <p className="text-gray-600 mb-2 text-sm sm:text-base">
                 <strong>Status:</strong>{" "}
                 <span className="capitalize text-blue-700">{order.status}</span>
               </p>
-              <p className="text-gray-600 mb-2">
+              <p className="text-gray-600 mb-2 text-sm sm:text-base">
                 <strong>Total:</strong> ${Number(order.total).toFixed(2)}
               </p>
 
               {/* Items */}
               <div className="mt-4">
                 <h3 className="font-semibold mb-2">Items:</h3>
-                <ul className="space-y-1">
+                <ul className="space-y-1 text-sm sm:text-base">
                   {order.items?.map((item, idx) => (
-                    <li key={idx} className="flex justify-between">
+                    <li key={idx} className="flex flex-col sm:flex-row sm:justify-between">
                       <span>{item.productTitle} × {item.quantity}</span>
-                      <span>${(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="sm:text-right">${(item.price * item.quantity).toFixed(2)}</span>
                     </li>
                   ))}
                 </ul>
@@ -150,11 +147,11 @@ const StatusTimeline = ({ status }) => {
               {/* Status Timeline */}
               <StatusTimeline status={order.status} />
 
-              {/*Cancel button (only for pending/confirmed orders) */}
+              {/* Cancel button */}
               {["pending"].includes(order.status) && (
                 <button
                   onClick={() => handleCancelOrder(order.id)}
-                  className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                  className="mt-4 w-full sm:w-auto bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
                 >
                   Cancel Order
                 </button>
