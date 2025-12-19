@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useProducts } from "../Contexts/ProductContext";
+import { useEffect } from "react";
 
 const AdminDashboard = () => {
   const { productsByCategory, addProduct, deleteProduct, updateProduct } =
@@ -7,6 +8,59 @@ const AdminDashboard = () => {
   const [selectedType, setSelectedType] = useState("medicines");
   const [formData, setFormData] = useState({});
   const [editingProduct, setEditingProduct] = useState(null);
+  const [selectedSection, setSelectedSection] = useState("products"); // "products" or "orders"
+const [orders, setOrders] = useState([]);
+
+  //Fetch orders when Orders section is active
+  useEffect(() => {
+  if (selectedSection === "orders") {
+    fetch("http://localhost:5000/orders")
+      .then(res => res.json())
+      .then(data => setOrders(data))
+      .catch(err => console.error("Error fetching orders:", err));
+  }
+}, [selectedSection]);
+
+  //Add handlers for updating/cancelling orders
+  const updateStatus = async (id, status) => {
+  try {
+    const res = await fetch(`http://localhost:5000/orders/${id}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setOrders(prev =>
+        prev.map(order =>
+          order.id === id ? { ...order, status: data.status } : order
+        )
+      );
+    } else {
+      alert(data.error || "Failed to update status");
+    }
+  } catch (err) {
+    console.error("Error updating status:", err);
+  }
+};
+
+const cancelOrder = async (id) => {
+  try {
+    const res = await fetch(`http://localhost:5000/orders/${id}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setOrders(prev => prev.filter(order => order.id !== id));
+    } else {
+      alert(data.error || "Unable to cancel order");
+    }
+  } catch (err) {
+    console.error("Error cancelling order:", err);
+  }
+};
+
+  
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -461,76 +515,165 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="p-8 font-sans bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold text-blue-700 mb-6 text-center">
-        Admin Product Dashboard
-      </h1>
+  <div className="p-8 font-sans bg-gray-50 min-h-screen">
+    <h1 className="text-3xl font-bold text-blue-700 mb-6 text-center">
+      Admin Dashboard
+    </h1>
 
-      {/* Product Type Selector */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Select Product Type:
-        </label>
-        <select
-          value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value)}
-          className="w-full max-w-xs px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="medicines">Medicines</option>
-          <option value="vitamins">Vitamins</option>
-          <option value="medicalequipment">Medical Equipment</option>
-          <option value="firstaid">First Aid</option>
-          <option value="personalcare">Personal Care</option>
-          <option value="babycare">Baby Care</option>
-        </select>
-      </div>
+    {/* Section Switcher */}
+    <div className="mb-6 flex gap-4 justify-center">
+      <button
+        onClick={() => setSelectedSection("products")}
+        className={`px-4 py-2 rounded-md font-medium ${
+          selectedSection === "products"
+            ? "bg-blue-600 text-white"
+            : "bg-gray-200 text-gray-700"
+        }`}
+      >
+        Products
+      </button>
+      <button
+        onClick={() => setSelectedSection("orders")}
+        className={`px-4 py-2 rounded-md font-medium ${
+          selectedSection === "orders"
+            ? "bg-blue-600 text-white"
+            : "bg-gray-200 text-gray-700"
+        }`}
+      >
+        Orders
+      </button>
+    </div>
 
-      {/* Product Form */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {renderFields()}
+    {selectedSection === "products" ? (
+      <>
+        {/* ✅ Product Type Selector */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Select Product Type:
+          </label>
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            className="w-full max-w-xs px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="medicines">Medicines</option>
+            <option value="vitamins">Vitamins</option>
+            <option value="medicalequipment">Medical Equipment</option>
+            <option value="firstaid">First Aid</option>
+            <option value="personalcare">Personal Care</option>
+            <option value="babycare">Baby Care</option>
+          </select>
         </div>
-        <button
-          onClick={handleAddProduct}
-          className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition"
-        >
-          Add Product
-        </button>
-      </div>
 
-      {/* Table */}
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4 capitalize">
-        {selectedType} Table
-      </h2>
-      <div className="overflow-x-auto">{renderTable(selectedType)}</div>
+        {/* Product Form */}
+        <div className="bg-white p-6 rounded-lg shadow-md mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderFields()}
+          </div>
+          <button
+            onClick={handleAddProduct}
+            className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition"
+          >
+            Add Product
+          </button>
+        </div>
 
-      {/* ✅ Edit Modal */}
-      {editingProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl overflow-y-auto max-h-[90vh]">
-            <h2 className="text-xl font-semibold mb-4">Edit Product</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {renderFields()}
-            </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleUpdate}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Save Changes
-              </button>
+        {/* Table */}
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4 capitalize">
+          {selectedType} Table
+        </h2>
+        <div className="overflow-x-auto">{renderTable(selectedType)}</div>
+
+        {/* ✅ Edit Modal */}
+        {editingProduct && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl overflow-y-auto max-h-[90vh]">
+              <h2 className="text-xl font-semibold mb-4">Edit Product</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {renderFields()}
+              </div>
+              <div className="flex justify-end gap-2 mt-6">
+                <button
+                  onClick={closeModal}
+                  className="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdate}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Save Changes
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </>
+    ) : (
+     <>
+  {/* ✅ Orders Section */}
+  <h2 className="text-2xl font-semibold text-gray-800 mb-4">Orders Table</h2>
+  {orders.length === 0 ? (
+    <p className="text-gray-600">No orders found.</p>
+  ) : (
+    <div className="overflow-x-auto">
+      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+        <thead className="bg-blue-100 text-blue-800 text-sm uppercase sticky top-0">
+          <tr>
+            <th className="px-6 py-3 text-left">Order #</th>
+            <th className="px-6 py-3 text-left">User</th>
+            <th className="px-6 py-3 text-left">Date</th>
+            <th className="px-6 py-3 text-left">Total</th>
+            <th className="px-6 py-3 text-left">Items</th> {/* ✅ new column */}
+            <th className="px-6 py-3 text-left">Status</th>
+          </tr>
+        </thead>
+        <tbody className="text-gray-700 text-sm">
+          {orders.map(order => (
+            <tr key={order.id} className="border-t hover:bg-gray-50">
+              <td className="px-6 py-4">{order.user_order_number}</td>
+              <td className="px-6 py-4">
+                {order.fullName} <br />
+                <span className="text-xs text-gray-500">{order.email}</span>
+              </td>
+              <td className="px-6 py-4">
+                {new Date(order.created_at).toLocaleString()}
+              </td>
+              <td className="px-6 py-4">${Number(order.total).toFixed(2)}</td>
+              <td className="px-6 py-4">
+                <ul className="space-y-1">
+                  {order.items?.map((item, idx) => (
+                    <li key={idx}>
+                      {item.productTitle} × {item.quantity}
+                    </li>
+                  ))}
+                </ul>
+              </td>
+              <td className="px-6 py-4 flex flex-col md:flex-row gap-2">
+                <select
+                  value={order.status}
+                  onChange={(e) => updateStatus(order.id, e.target.value)}
+                  className="border px-2 py-1 rounded w-full md:w-auto"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="processing">Processing</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
-  );
+  )}
+</>
+    )}
+  </div>
+);
 };
 
 export default AdminDashboard;

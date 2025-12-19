@@ -14,6 +14,8 @@ import BlogPage from "./Pages/Blog";
 import AboutPage from "./Pages/About";
 import AdminDashboard from "./Pages/AdminDashboard";
 import SignUp from "./Pages/SignUp";
+import MyOrdersPage from "./Pages/MyOrdersPage";
+
 
 const router = createBrowserRouter(
   [
@@ -45,6 +47,7 @@ const router = createBrowserRouter(
         { path: "/services", element: <ServicesPage /> },
         { path: "/blog", element: <BlogPage /> },
         { path: "/about", element: <AboutPage /> },
+       { path:"/orders", element:<MyOrdersPage />},
         {
           path: "/dashboard",
           element: (

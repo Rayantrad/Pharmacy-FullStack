@@ -23,7 +23,7 @@ export const ProductProvider = ({ children }) => {
           : {};
 
         setProductsByCategory(byCategory);
-        setAllProducts(Array.isArray(data) ? data : []);
+        setAllProducts(data);
       } catch (err) {
         console.error("Error fetching products:", err);
       }
@@ -98,6 +98,27 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
+  // ProductContext.js
+const refreshProducts = async () => {
+  try {
+    const res = await fetch("http://localhost:5000/products");
+    const data = await res.json();
+    setAllProducts(data);
+
+    const byCategory = Array.isArray(data)
+      ? data.reduce((acc, product) => {
+          const type = product.type;
+          if (!acc[type]) acc[type] = [];
+          acc[type].push(product);
+          return acc;
+        }, {})
+      : {};
+    setProductsByCategory(byCategory);
+  } catch (err) {
+    console.error("Error refreshing products:", err);
+  }
+};
+
   return (
     <ProductContext.Provider
       value={{
@@ -107,6 +128,7 @@ export const ProductProvider = ({ children }) => {
         addProduct,
         updateProduct,
         deleteProduct,
+        refreshProducts 
       }}
     >
       {children}

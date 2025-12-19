@@ -267,6 +267,202 @@ app.post("/logout", (req, res) => {
   });
 });
 
+//place order
+app.post("/orders", (req, res) => {
+  const { user_id, fullName, address, phone, paymentMethod, items, subtotal, shipping, total } = req.body;
+
+  // Get last user_order_number
+  const getLastOrderNum = "SELECT MAX(user_order_number) AS maxNum FROM orders WHERE user_id = ?";
+  db.query(getLastOrderNum, [user_id], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    const nextOrderNumber = (rows[0].maxNum || 0) + 1;
+
+    const q = `
+      INSERT INTO orders (user_id, user_order_number, fullName, address, phone, paymentMethod, subtotal, shipping, total, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    db.query(q, [user_id, nextOrderNumber, fullName, address, phone, paymentMethod, subtotal, shipping, total, "pending"], (err, result) => {
+      if (err) return res.status(500).json({ error: err.message });
+
+      const orderId = result.insertId;
+
+      // Insert items
+      const itemQuery = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ?";
+      const values = items.map(item => [orderId, item.product_id, item.quantity, item.price]);
+
+      db.query(itemQuery, [values], (err2) => {
+        if (err2) return res.status(500).json({ error: err2.message });
+
+        // Decrease stock
+        items.forEach(item => {
+          const updateStockQuery = "UPDATE products SET stock = stock - ? WHERE id = ?";
+          db.query(updateStockQuery, [item.quantity, item.product_id], (err3) => {
+            if (err3) console.error("Error updating stock:", err3.message);
+          });
+        });
+
+        // Clear cart
+        const clearCartQuery = "DELETE FROM cart WHERE user_id = ?";
+        db.query(clearCartQuery, [user_id], (err4) => {
+          if (err4) console.error("Error clearing cart:", err4.message);
+
+          res.json({ message: "Order placed successfully", orderId, user_order_number: nextOrderNumber });
+        });
+      });
+    });
+  });
+});
+
+
+// ✅ Get all orders with items
+app.get("/orders", (req, res) => {
+  const q = `
+    SELECT 
+      o.id AS order_id, o.user_order_number, o.user_id, o.fullName, o.address, o.phone, 
+      o.paymentMethod, o.subtotal, o.shipping, o.total, o.status, o.created_at,
+      u.username, u.email,
+      oi.product_id, oi.quantity, oi.price,
+      p.productTitle, p.thumbnail
+    FROM orders o
+    JOIN users u ON o.user_id = u.id
+    LEFT JOIN order_items oi ON o.id = oi.order_id
+    LEFT JOIN products p ON oi.product_id = p.id
+    ORDER BY o.created_at DESC
+  `;
+
+  db.query(q, (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    // ✅ Group rows by order_id
+    const ordersMap = {};
+    rows.forEach(row => {
+      if (!ordersMap[row.order_id]) {
+        ordersMap[row.order_id] = {
+          id: row.order_id,
+          user_order_number: row.user_order_number, // ✅ add here
+          user_id: row.user_id,
+          fullName: row.fullName,
+          address: row.address,
+          phone: row.phone,
+          paymentMethod: row.paymentMethod,
+          subtotal: row.subtotal,
+          shipping: row.shipping,
+          total: row.total,
+          status: row.status,
+          created_at: row.created_at,
+          username: row.username,
+          email: row.email,
+          items: []
+        };
+      }
+      if (row.product_id) {
+        ordersMap[row.order_id].items.push({
+          product_id: row.product_id,
+          productTitle: row.productTitle,
+          thumbnail: row.thumbnail,
+          quantity: row.quantity,
+          price: row.price
+        });
+      }
+    });
+
+    const orders = Object.values(ordersMap);
+    res.json(orders);
+  });
+});
+
+
+// Update Order Status
+app.put("/orders/:id/status", (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const validStatuses = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: "Invalid status value" });
+  }
+
+  const q = "UPDATE orders SET status = ? WHERE id = ?";
+  db.query(q, [status, id], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    if (status === "cancelled") {
+      const getItemsQuery = "SELECT product_id, quantity FROM order_items WHERE order_id = ?";
+      db.query(getItemsQuery, [id], (err, items) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        let restoreCount = 0;
+        items.forEach(item => {
+          const restoreStockQuery = "UPDATE products SET stock = stock + ? WHERE id = ?";
+          db.query(restoreStockQuery, [item.quantity, item.product_id], (err2) => {
+            if (err2) console.error("Error restoring stock:", err2.message);
+            restoreCount++;
+            if (restoreCount === items.length) {
+              res.json({ message: "Order cancelled, stock restored.", status });
+            }
+          });
+        });
+
+        if (items.length === 0) {
+          res.json({ message: "Order cancelled (no items).", status });
+        }
+      });
+    } else {
+      res.json({ message: "Order status updated", status });
+    }
+  });
+});
+
+/// ✅ Cancel order (only if pending or confirmed)
+app.delete("/orders/:id", (req, res) => {
+  const { id } = req.params;
+
+  // 1. Get order status
+  const statusQuery = "SELECT status FROM orders WHERE id = ?";
+  db.query(statusQuery, [id], (err1, orderRows) => {
+    if (err1) return res.status(500).json({ error: err1.message });
+    if (orderRows.length === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const status = orderRows[0].status;
+    if (!["pending", "cancelled"].includes(status)) {
+  return res.status(400).json({ error: "Order cannot be deleted at this stage" });
+}
+
+    // 2. Get items in the order
+    const itemsQuery = "SELECT product_id, quantity FROM order_items WHERE order_id = ?";
+    db.query(itemsQuery, [id], (err2, items) => {
+      if (err2) return res.status(500).json({ error: err2.message });
+
+      // 3. Restore stock for each item
+      items.forEach(item => {
+        const restoreStockQuery = "UPDATE products SET stock = stock + ? WHERE id = ?";
+        db.query(restoreStockQuery, [item.quantity, item.product_id], (err3) => {
+          if (err3) console.error("Error restoring stock:", err3.message);
+        });
+      });
+
+      // 4. Delete order_items
+      const deleteItemsQuery = "DELETE FROM order_items WHERE order_id = ?";
+      db.query(deleteItemsQuery, [id], (err4) => {
+        if (err4) return res.status(500).json({ error: err4.message });
+
+        // 5. Delete order itself
+        const deleteOrderQuery = "DELETE FROM orders WHERE id = ?";
+        db.query(deleteOrderQuery, [id], (err5) => {
+          if (err5) return res.status(500).json({ error: err5.message });
+
+          res.json({ message: "Order cancelled successfully, stock restored." });
+        });
+      });
+    });
+  });
+});
+
+
+
 app.listen(5000, () => {
   console.log("Backend server running on http://localhost:5000");
 });

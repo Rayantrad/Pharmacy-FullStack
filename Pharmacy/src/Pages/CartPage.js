@@ -17,6 +17,7 @@ function CartPage() {
   useEffect(() => {
     if (!userId) {
       setCartItems([]);
+      window.dispatchEvent(new Event("cartUpdated"));
       return;
     }
     fetch(`http://localhost:5000/cart/${userId}`)

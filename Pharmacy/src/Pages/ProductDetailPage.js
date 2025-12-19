@@ -11,9 +11,6 @@ function ProductDetailPage() {
   const navigate = useNavigate();
   const { allProducts  } = useProducts();
 
-  // Find product from static list
-  //const allProducts = ProductsList.data;
-
   const product = allProducts.find(
     (item) =>
       String(item.id) === String(id) &&
