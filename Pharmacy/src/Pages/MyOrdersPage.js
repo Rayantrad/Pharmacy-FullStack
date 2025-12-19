@@ -8,7 +8,7 @@ function MyOrdersPage() {
   const { user } = useContext(UserContext);
   const [orders, setOrders] = useState([]);
 
-  // ✅ Load orders
+  //Load orders
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -23,7 +23,7 @@ function MyOrdersPage() {
     fetchOrders();
   }, [user.id]);
 
-  // ✅ Cancel order (only if pending or confirmed)
+  // Cancel order (only if pending or confirmed)
   const handleCancelOrder = async (orderId) => {
     try {
       const res = await fetch(`http://localhost:5000/orders/${orderId}`, {
@@ -42,7 +42,7 @@ function MyOrdersPage() {
     }
   };
 
-  // ✅ Status timeline component
+  //Status timeline component
 const StatusTimeline = ({ status }) => {
   const steps = [
     { key: "pending", label: "Pending", icon: <FaClock /> },
@@ -91,7 +91,7 @@ const StatusTimeline = ({ status }) => {
         <div className="space-y-6">
           {orders.map(order => (
             <div key={order.id} className="bg-white shadow rounded p-6 relative">
-              {/* ✅ Trash icon top-right (only for cancelled orders) */}
+              {/*Trash icon top-right (only for cancelled orders) */}
               {order.status === "cancelled" && (
                 <button
                   onClick={async () => {
@@ -147,10 +147,10 @@ const StatusTimeline = ({ status }) => {
                 </ul>
               </div>
 
-              {/* ✅ Status Timeline */}
+              {/* Status Timeline */}
               <StatusTimeline status={order.status} />
 
-              {/* ✅ Cancel button (only for pending/confirmed orders) */}
+              {/*Cancel button (only for pending/confirmed orders) */}
               {["pending"].includes(order.status) && (
                 <button
                   onClick={() => handleCancelOrder(order.id)}

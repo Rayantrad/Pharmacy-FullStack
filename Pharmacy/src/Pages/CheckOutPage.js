@@ -44,7 +44,7 @@ function CheckoutPage() {
  const handleSubmit = async (e) => {
   e.preventDefault();
 
-  // ✅ Validate form fields
+  // Validate form fields
   if (!formData.fullName || !formData.address || !formData.phone) {
     alert("Please fill in all required fields.");
     return;
@@ -85,13 +85,13 @@ function CheckoutPage() {
       
       setOrderId(data.orderId);
       setOrderedItems(cartItems);
-      setUserOrderNumber(data.user_order_number); // ✅ store per-user number
+      setUserOrderNumber(data.user_order_number); // store per-user number
       setOrderConfirmed(true);
 
       setCartItems([]);
       window.dispatchEvent(new Event("cartUpdated"));
 
-  // ✅ Refresh products globally
+  // Refresh products globally
   await refreshProducts();
 
 

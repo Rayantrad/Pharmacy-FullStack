@@ -13,7 +13,7 @@ function CartPage() {
     window.scrollTo(0, 0);
   }, []);
 
-  // ✅ Load cart from backend whenever userId changes
+  // Load cart from backend whenever userId changes
   useEffect(() => {
     if (!userId) {
       setCartItems([]);
@@ -26,22 +26,22 @@ function CartPage() {
       .catch((err) => console.error("Error loading cart:", err));
   }, [userId]);
 
-  // ✅ Refresh cart after any update
+  // Refresh cart after any update
   const refreshCart = async () => {
     if (!userId) return;
     const res = await fetch(`http://localhost:5000/cart/${userId}`);
     const data = await res.json();
     setCartItems(data);
-    window.dispatchEvent(new Event("cartUpdated")); // 👈 notify CartIcon
+    window.dispatchEvent(new Event("cartUpdated")); //notify CartIcon
   };
 
-  // ✅ Remove entire item
+  // Remove entire item
   const handleRemove = async (id) => {
     await fetch(`http://localhost:5000/cart/${id}`, { method: "DELETE" });
     refreshCart();
   };
 
-  // ✅ Decrease quantity (not below 1)
+  //Decrease quantity 
   const handleDecreaseQuantity = async (id, quantity) => {
     if (quantity > 1) {
       await fetch(`http://localhost:5000/cart/${id}`, {
@@ -53,7 +53,7 @@ function CartPage() {
     }
   };
 
-  // ✅ Increase quantity (not beyond stock)
+  // Increase quantity
   const handleIncreaseQuantity = async (id, quantity, stock) => {
     if (quantity < stock) {
       await fetch(`http://localhost:5000/cart/${id}`, {
@@ -67,7 +67,7 @@ function CartPage() {
     }
   };
 
-  // ✅ Totals
+  // Totals
   const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cartItems
     .reduce((sum, item) => sum + item.price * item.quantity, 0)

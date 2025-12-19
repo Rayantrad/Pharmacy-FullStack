@@ -75,36 +75,36 @@ const cancelOrder = async (id) => {
 
   try {
     await addProduct(newProduct);
-    alert("✅ Product added successfully!");
+    alert("Product added successfully!");
     setFormData({});
   } catch (err) {
     console.error("Error adding product:", err);
-    alert("❌ Failed to add product.");
+    alert("Failed to add product.");
   }
 };
 
   const handleDelete = (type, id) => {
-  const confirmDelete = window.confirm("⚠️ Are you sure you want to delete this product?");
+  const confirmDelete = window.confirm(" Are you sure you want to delete this product?");
   if (confirmDelete) {
     deleteProduct(type, id);
-    alert("🗑️ Product deleted successfully!");
+    alert("Product deleted successfully!");
   }
 };
 
   const handleEdit = (product) => {
     setEditingProduct(product);
-    setFormData(product); // ✅ pre-fill form with product values
+    setFormData(product); // pre-fill form with product values
   };
 
   const handleUpdate = () => {
   try {
     updateProduct(editingProduct.id, formData);
-    alert("✏️ Product updated successfully!");
+    alert(" Product updated successfully!");
     setEditingProduct(null);
     setFormData({});
   } catch (err) {
     console.error("Error updating product:", err);
-    alert("❌ Failed to update product.");
+    alert("Failed to update product.");
   }
 };
 
@@ -546,7 +546,7 @@ const cancelOrder = async (id) => {
 
     {selectedSection === "products" ? (
       <>
-        {/* ✅ Product Type Selector */}
+        {/*Product Type Selector */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Select Product Type:
@@ -584,7 +584,7 @@ const cancelOrder = async (id) => {
         </h2>
         <div className="overflow-x-auto">{renderTable(selectedType)}</div>
 
-        {/* ✅ Edit Modal */}
+        {/*Edit Modal */}
         {editingProduct && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl overflow-y-auto max-h-[90vh]">
@@ -612,7 +612,7 @@ const cancelOrder = async (id) => {
       </>
     ) : (
      <>
-  {/* ✅ Orders Section */}
+  {/* Orders Section */}
   <h2 className="text-2xl font-semibold text-gray-800 mb-4">Orders Table</h2>
   {orders.length === 0 ? (
     <p className="text-gray-600">No orders found.</p>
@@ -625,7 +625,7 @@ const cancelOrder = async (id) => {
             <th className="px-6 py-3 text-left">User</th>
             <th className="px-6 py-3 text-left">Date</th>
             <th className="px-6 py-3 text-left">Total</th>
-            <th className="px-6 py-3 text-left">Items</th> {/* ✅ new column */}
+            <th className="px-6 py-3 text-left">Items</th> 
             <th className="px-6 py-3 text-left">Status</th>
           </tr>
         </thead>

@@ -20,12 +20,12 @@ export const UserProvider = ({ children }) => {
       }
 
       const data = await res.json();
-console.log("Login response:", data); // 👈 check if role is here
+console.log("Login response:", data); 
 setUser({
   id: data.id,
   username: data.username,
   email: data.email,
-  role: data.role, // 👈 store role
+  role: data.role, 
 });
       return true;
     } catch {

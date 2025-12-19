@@ -5,7 +5,7 @@ import ProductGrid from "../Components/ProductGrid";
 import { useProducts } from "../Contexts/ProductContext";
 
 function Products() {
-  const { allProducts } = useProducts(); // ✅ match context
+  const { allProducts } = useProducts();
   const [selectedType, setSelectedType] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);

@@ -1,5 +1,5 @@
 import React from 'react';
-import Card from "./Card"; // adjust path if needed
+import Card from "./Card"; 
 
 function ProductGrid({ data }) {
   return (

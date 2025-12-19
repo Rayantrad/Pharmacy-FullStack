@@ -33,7 +33,7 @@ db.connect((err) => {
   console.log("Connected to MySQL database.");
 });
 
-// ✅ Get all products
+// Get all products
 app.get("/products", (req, res) => {
   const q = "SELECT * FROM products";
   db.query(q, (err, data) => {
@@ -42,7 +42,7 @@ app.get("/products", (req, res) => {
   });
 });
 
-// ✅ Get one product
+//  Get one product
 app.get("/products/:id", (req, res) => {
   const id = req.params.id;
   const q = "SELECT * FROM products WHERE id = ?";
@@ -53,7 +53,7 @@ app.get("/products/:id", (req, res) => {
   });
 });
 
-// ✅ Add product
+// Add product
 app.post("/products", (req, res) => {
   const product = req.body;
 
@@ -67,7 +67,7 @@ app.post("/products", (req, res) => {
   });
 });
 
-// ✅ Update product
+// Update product
 app.put("/products/:id", (req, res) => {
   const id = req.params.id;
   const product = req.body;
@@ -82,7 +82,7 @@ app.put("/products/:id", (req, res) => {
   });
 });
 
-// ✅ Delete product
+// Delete product
 app.delete("/products/:id", (req, res) => {
   const id = req.params.id;
 
@@ -94,8 +94,7 @@ app.delete("/products/:id", (req, res) => {
 });
 
 
-// ✅ Get cart items for a user
-// ✅ Fixed version: Get cart items with product details
+//  Get cart items with product details
 app.get("/cart/:userId", (req, res) => {
   const userId = req.params.userId;
   const q = `
@@ -118,7 +117,7 @@ app.get("/cart/:userId", (req, res) => {
   });
 });
 
-// ✅ Add item to cart
+// Add item to cart
 app.post("/cart", (req, res) => {
   const { user_id, product_id, quantity } = req.body;
 
@@ -151,7 +150,7 @@ app.post("/cart", (req, res) => {
   });
 });
 
-// ✅ Update quantity
+// Update quantity
 app.put("/cart/:id", (req, res) => {
   const id = req.params.id;
   const { quantity } = req.body;
@@ -162,7 +161,7 @@ app.put("/cart/:id", (req, res) => {
   });
 });
 
-// ✅ Remove item
+// Remove item
 app.delete("/cart/:id", (req, res) => {
   const id = req.params.id;
   const q = "DELETE FROM cart WHERE id = ?";
@@ -174,7 +173,7 @@ app.delete("/cart/:id", (req, res) => {
 
 
 
-// ✅ Add favorite
+// Add favorite
 app.post("/favorites", (req, res) => {
   const { user_id, product_id, type } = req.body;
   const q = "INSERT INTO favorites (user_id, product_id, type) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE product_id = product_id";
@@ -184,7 +183,7 @@ app.post("/favorites", (req, res) => {
   });
 });
 
-// ✅ Remove favorite
+// Remove favorite
 app.delete("/favorites/:userId/:productId/:type", (req, res) => {
   const { userId, productId, type } = req.params;
   const q = "DELETE FROM favorites WHERE user_id = ? AND product_id = ? AND type = ?";
@@ -195,7 +194,7 @@ app.delete("/favorites/:userId/:productId/:type", (req, res) => {
 });
 
 
-// ✅ Get favorites with product details
+// Get favorites with product details
 app.get("/favorites/:userId", (req, res) => {
   const userId = req.params.userId;
   const q = `
@@ -212,7 +211,7 @@ WHERE f.user_id = ?
 });
 
 
-// ✅ Signup
+// Signup
 app.post("/signup", (req, res) => {
   const { username, email, password } = req.body;
 
@@ -228,7 +227,7 @@ app.post("/signup", (req, res) => {
 
 
 
-// ✅ Login
+// Login
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -246,18 +245,18 @@ app.post("/login", (req, res) => {
       return res.status(401).json({ error: "Invalid username or password" });
     }
 
-    // ✅ Success → return user data including role
+    // Success → return user data including role
     res.json({
       id: user.id,
       username: user.username,
       email: user.email,
-      role: user.role, // 👈 add this
+      role: user.role, 
     });
   });
 });
 
 
-// ✅ Logout
+// Logout
 app.post("/logout", (req, res) => {
   const { user_id } = req.body;
   const q = "UPDATE users SET logged_in = 0 WHERE id = ?";
@@ -315,7 +314,7 @@ app.post("/orders", (req, res) => {
 });
 
 
-// ✅ Get all orders with items
+// Get all orders with items
 app.get("/orders", (req, res) => {
   const q = `
     SELECT 
@@ -334,13 +333,13 @@ app.get("/orders", (req, res) => {
   db.query(q, (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
 
-    // ✅ Group rows by order_id
+    //Group rows by order_id
     const ordersMap = {};
     rows.forEach(row => {
       if (!ordersMap[row.order_id]) {
         ordersMap[row.order_id] = {
           id: row.order_id,
-          user_order_number: row.user_order_number, // ✅ add here
+          user_order_number: row.user_order_number, 
           user_id: row.user_id,
           fullName: row.fullName,
           address: row.address,
@@ -414,11 +413,11 @@ app.put("/orders/:id/status", (req, res) => {
   });
 });
 
-/// ✅ Cancel order (only if pending or confirmed)
+// Cancel order (only if pending or confirmed)
 app.delete("/orders/:id", (req, res) => {
   const { id } = req.params;
 
-  // 1. Get order status
+  //Get order status
   const statusQuery = "SELECT status FROM orders WHERE id = ?";
   db.query(statusQuery, [id], (err1, orderRows) => {
     if (err1) return res.status(500).json({ error: err1.message });
@@ -431,12 +430,12 @@ app.delete("/orders/:id", (req, res) => {
   return res.status(400).json({ error: "Order cannot be deleted at this stage" });
 }
 
-    // 2. Get items in the order
+    //Get items in the order
     const itemsQuery = "SELECT product_id, quantity FROM order_items WHERE order_id = ?";
     db.query(itemsQuery, [id], (err2, items) => {
       if (err2) return res.status(500).json({ error: err2.message });
 
-      // 3. Restore stock for each item
+      //Restore stock for each item
       items.forEach(item => {
         const restoreStockQuery = "UPDATE products SET stock = stock + ? WHERE id = ?";
         db.query(restoreStockQuery, [item.quantity, item.product_id], (err3) => {
@@ -444,12 +443,12 @@ app.delete("/orders/:id", (req, res) => {
         });
       });
 
-      // 4. Delete order_items
+      // Delete order_items
       const deleteItemsQuery = "DELETE FROM order_items WHERE order_id = ?";
       db.query(deleteItemsQuery, [id], (err4) => {
         if (err4) return res.status(500).json({ error: err4.message });
 
-        // 5. Delete order itself
+        // Delete order itself
         const deleteOrderQuery = "DELETE FROM orders WHERE id = ?";
         db.query(deleteOrderQuery, [id], (err5) => {
           if (err5) return res.status(500).json({ error: err5.message });

@@ -9,7 +9,7 @@ function AddToCartPanel({ product }) {
   const { user } = useAuth();
   const userId = user?.id;
 
-  // ✅ Load current stock considering items already in cart (from backend)
+  // Load current stock considering items already in cart
   useEffect(() => {
     if (product && userId) {
       fetch(`http://localhost:5000/cart/${userId}`)
@@ -23,9 +23,9 @@ function AddToCartPanel({ product }) {
         })
         .catch((err) => console.error("Error fetching cart:", err));
     } else {
-      setCurrentStock(product?.stock || 0); // fallback if not logged in
+      setCurrentStock(product?.stock || 0); 
     }
-  }, [product, userId]); // 👈 include userId here
+  }, [product, userId]); 
 
   const increaseQuantity = () => {
     if (quantity < currentStock) setQuantity((prev) => prev + 1);
@@ -35,10 +35,10 @@ function AddToCartPanel({ product }) {
     if (quantity > 1) setQuantity((prev) => prev - 1);
   };
 
-  // ✅ Add to cart via backend
+  // Add to cart via backend
   const handleAddToCart = async () => {
     if (!userId) {
-      setCartMessage("❌ Please log in to add items");
+      setCartMessage("Please log in to add items");
       return;
     }
     try {
@@ -54,7 +54,7 @@ function AddToCartPanel({ product }) {
 
       const data = await res.json();
       if (!res.ok) {
-        setCartMessage(`❌ ${data.error}`);
+        setCartMessage(` ${data.error}`);
         return;
       }
 
@@ -66,12 +66,12 @@ function AddToCartPanel({ product }) {
       setCurrentStock(product.stock - usedStock);
 
       setQuantity(1);
-      setCartMessage(`✅ Added ${quantity} to cart`);
-      window.dispatchEvent(new Event("cartUpdated")); // 👈 notify CartIcon
+      setCartMessage(`Added ${quantity} to cart`);
+      window.dispatchEvent(new Event("cartUpdated"));
       setTimeout(() => setCartMessage(""), 3000);
     } catch (err) {
       console.error(err);
-      setCartMessage("❌ Could not add to cart");
+      setCartMessage("Could not add to cart");
     }
   };
 

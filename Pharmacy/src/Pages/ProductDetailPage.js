@@ -1,10 +1,9 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { FaArrowLeft, FaStar } from "react-icons/fa";
-//import { ProductsList } from "../Data/ProductsList";
 import AddToCartPanel from "../Functions/AddToCartPanel";
 import FavoriteButton from "../Components/FavouriteButton";
-import { useProducts } from "../Contexts/ProductContext"; // ✅ adjust path if needed
+import { useProducts } from "../Contexts/ProductContext"; 
 
 function ProductDetailPage() {
   const { type, id } = useParams();

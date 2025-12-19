@@ -35,7 +35,7 @@ function SignUp() {
       // Optionally redirect to login
       setTimeout(() => navigate("/login"), 2000);
     } else {
-      setError("❌ Signup failed. Try again.");
+      setError("Signup failed. Try again.");
     }
   };
 

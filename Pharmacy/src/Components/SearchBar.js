@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiSearch } from 'react-icons/fi'; // Feather icon
+import { FiSearch } from 'react-icons/fi';
 
 function SearchBar({ onSearch }) {
   const handleChange = (e) => {

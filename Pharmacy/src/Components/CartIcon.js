@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { GrCart } from "react-icons/gr";
 import { useNavigate } from "react-router";
-import { useAuth } from "../Contexts/UserContext"; // 👈 your auth context
+import { useAuth } from "../Contexts/UserContext"; 
 
 function CartIcon() {
   const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
-  const { user } = useAuth(); // 👈 get logged-in user
+  const { user } = useAuth(); 
   const userId = user?.id;
 
   const updateCartCount = async () => {
     if (!userId) {
-      setCartCount(0); // 👈 reset when logged out
+      setCartCount(0); 
       return;
     }
     try {
