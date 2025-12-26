@@ -2,6 +2,129 @@ import express from "express";
 import mysql from "mysql";
 import cors from "cors";
 import bcrypt from "bcrypt"; // for password hashing
+import nodemailer from "nodemailer";
+
+function getEmailContent(username, orderNumber, status) {
+  let subject = "CarePharma Order Update";
+  let textMessage = "";
+  let htmlMessage = "";
+
+  switch (status) {
+    case "processing":
+      textMessage = `Hello ${username}, your order #${orderNumber} is being carefully prepared by our team.`;
+      htmlMessage = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
+          <h2 style="color: #1E3A8A;">CarePharma Order Update</h2>
+          <p>Hello <b>${username}</b>,</p>
+          <p style="color:#1E3A8A; font-weight:bold;">
+            Great news! Your order #${orderNumber} is now <span style="color:#1E3A8A;">processing</span>.
+          </p>
+          <p>Our pharmacists are preparing everything with care to ensure safe and fast delivery.</p>
+        </div>
+      `;
+      break;
+
+    case "shipped":
+      textMessage = `Hello ${username}, your order #${orderNumber} has been shipped and is on its way to you!`;
+      htmlMessage = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
+          <h2 style="color: #1E3A8A;">CarePharma Order Update</h2>
+          <p>Hello <b>${username}</b>,</p>
+          <p style="color:#1E3A8A; font-weight:bold;">
+            Exciting news! Your order #${orderNumber} has been <span style="color:#1E3A8A;">shipped</span>.
+          </p>
+          <p>🚚 Your package is on its way — our delivery partner will contact you soon.</p>
+        </div>
+      `;
+      break;
+
+    case "delivered":
+      textMessage = `Hello ${username}, your order #${orderNumber} has been delivered. We hope you enjoy your purchase!`;
+      htmlMessage = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
+          <h2 style="color: #1E3A8A;">CarePharma Order Update</h2>
+          <p>Hello <b>${username}</b>,</p>
+          <p style="color:#1E3A8A; font-weight:bold;">
+            Your order #${orderNumber} has been <span style="color:#1E3A8A;">delivered</span>.
+          </p>
+          <p>💙 Thank you for trusting CarePharma. We wish you good health and look forward to serving you again.</p>
+        </div>
+      `;
+      break;
+    
+    case "confirmed":
+  textMessage = `Hello ${username}, your order #${orderNumber} has been confirmed successfully.`;
+  htmlMessage = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
+      <h2 style="color: #1E3A8A;">CarePharma Order Update</h2>
+      <p>Hello <b>${username}</b>,</p>
+      <p style="color:#1E3A8A; font-weight:bold;">
+        Great news! Your order #${orderNumber} has been <span style="color:#1E3A8A;">confirmed</span>.
+      </p>
+      <p>✅ We’ve received your order and our team will start preparing it shortly.</p>
+      <p>Thank you for choosing <b style="color:#1E3A8A;">CarePharma</b> — we’ll keep you updated as it moves forward.</p>
+    </div>
+  `;
+  break;
+
+    case "cancelled":
+      textMessage = `Hello ${username}, we’re sorry to inform you that your order #${orderNumber} has been cancelled.`;
+      htmlMessage = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
+          <h2 style="color: #1E3A8A;">CarePharma Order Update</h2>
+          <p>Hello <b>${username}</b>,</p>
+          <p style="color:#e63946; font-weight:bold;">
+            We’re sorry — your order #${orderNumber} has been <span style="color:#e63946;">cancelled</span>.
+          </p>
+          <p>If this was unexpected, please contact our support team for assistance. We’ll be happy to help you place a new order.</p>
+          <p>Thank you for your understanding.</p>
+        </div>
+      `;
+      break;
+
+    default:
+      textMessage = `Hello ${username}, your order #${orderNumber} status is now: ${status}.`;
+      htmlMessage = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
+          <h2 style="color: #1E3A8A;">CarePharma Order Update</h2>
+          <p>Hello <b>${username}</b>,</p>
+          <p>Your order <b>#${orderNumber}</b> is: 
+            <span style="color:#1E3A8A; font-weight:bold;">${status}</span>.
+          </p>
+        </div>
+      `;
+  }
+
+  return { subject, textMessage, htmlMessage };
+}
+
+
+const transporter = nodemailer.createTransport({
+  service: "gmail", 
+  auth: {
+    user: "rayan.trad2005@gmail.com",
+    pass: "uqzj zywf prng mvvl"
+  }
+});
+
+function sendNotificationEmail(to, subject, message, htmlMessage) {
+  const mailOptions = {
+    from: "rayan.trad2005@gmail.com",
+    to,
+    subject,
+    text: message,     // fallback for clients that don’t support HTML
+    html: htmlMessage  // styled HTML version
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error("Error sending email:", error);
+    } else {
+      console.log("Email sent:", info.response);
+    }
+  });
+}
+
 
 const app = express();
 
@@ -385,6 +508,26 @@ app.put("/orders/:id/status", (req, res) => {
   const q = "UPDATE orders SET status = ? WHERE id = ?";
   db.query(q, [status, id], (err) => {
     if (err) return res.status(500).json({ error: err.message });
+
+    const getUserQuery = `
+  SELECT u.email, u.username, o.user_order_number 
+  FROM orders o 
+  JOIN users u ON o.user_id = u.id 
+  WHERE o.id = ?
+`;
+
+db.query(getUserQuery, [id], (err2, rows) => {
+  if (!err2 && rows.length > 0) {
+    const { email, username, user_order_number } = rows[0];
+
+    // Get dynamic content based on status
+    const { subject, textMessage, htmlMessage } = getEmailContent(username, user_order_number, status);
+
+    sendNotificationEmail(email, subject, textMessage, htmlMessage);
+  }
+});
+
+    
 
     if (status === "cancelled") {
       const getItemsQuery = "SELECT product_id, quantity FROM order_items WHERE order_id = ?";

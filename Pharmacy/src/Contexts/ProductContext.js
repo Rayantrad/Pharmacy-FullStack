@@ -30,6 +30,9 @@ export const ProductProvider = ({ children }) => {
     };
 
     fetchProducts();
+    const handler = () => fetchProducts();
+    window.addEventListener("productAdded", handler);
+    return () => window.removeEventListener("productAdded", handler);
   }, []);
 
   // Get one product

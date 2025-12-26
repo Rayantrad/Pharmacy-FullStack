@@ -44,21 +44,6 @@ const [orders, setOrders] = useState([]);
   }
 };
 
-const cancelOrder = async (id) => {
-  try {
-    const res = await fetch(`http://localhost:5000/orders/${id}`, {
-      method: "DELETE",
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setOrders(prev => prev.filter(order => order.id !== id));
-    } else {
-      alert(data.error || "Unable to cancel order");
-    }
-  } catch (err) {
-    console.error("Error cancelling order:", err);
-  }
-};
 
   
 
@@ -77,6 +62,7 @@ const cancelOrder = async (id) => {
     await addProduct(newProduct);
     alert("Product added successfully!");
     setFormData({});
+    window.dispatchEvent(new Event("productAdded"));
   } catch (err) {
     console.error("Error adding product:", err);
     alert("Failed to add product.");
