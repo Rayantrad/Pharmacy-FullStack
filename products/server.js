@@ -131,7 +131,10 @@ const app = express();
 // Enable CORS
 app.use(
   cors({
-    origin: "http://localhost:3000", // allow React dev server
+    origin: [
+    "http://localhost:3000", 
+    "https://frontend-production-ad9a.up.railway.app"
+  ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
