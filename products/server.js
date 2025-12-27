@@ -4,6 +4,7 @@ import cors from "cors";
 import bcrypt from "bcrypt"; // for password hashing
 import nodemailer from "nodemailer";
 
+require("dotenv").config();
 function getEmailContent(username, orderNumber, status) {
   let subject = "CarePharma Order Update";
   let textMessage = "";
@@ -142,13 +143,16 @@ app.use(
 
 app.use(express.json());
 
-// Create MySQL connection
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "pharmacy",
+const mysql = require("mysql2/promise");
+
+const db = mysql.createPool({
+  host: process.env.MYSQLHOST,
+  port: process.env.MYSQLPORT || 3306,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQL_DATABASE
 });
+
 
 // Connect to MySQL
 db.connect((err) => {
