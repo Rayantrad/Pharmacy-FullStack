@@ -25,7 +25,7 @@ function CheckoutPage() {
   useEffect(() => {
     window.scrollTo(0, 0);
     const fetchCart = async () => {
-      const res = await fetch(`http://localhost:5000/cart/${user.id}`);
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/cart/${user.id}`);
       const data = await res.json();
       setCartItems(data);
     };
@@ -72,7 +72,7 @@ function CheckoutPage() {
   console.log("Submitting order:", orderData);
 
   try {
-    const res = await fetch("http://localhost:5000/orders", {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/orders`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderData)

@@ -14,7 +14,7 @@ const [orders, setOrders] = useState([]);
   //Fetch orders when Orders section is active
   useEffect(() => {
   if (selectedSection === "orders") {
-    fetch("http://localhost:5000/orders")
+    fetch(`${process.env.REACT_APP_API_URL}/orders`)
       .then(res => res.json())
       .then(data => setOrders(data))
       .catch(err => console.error("Error fetching orders:", err));
@@ -24,7 +24,7 @@ const [orders, setOrders] = useState([]);
   //Add handlers for updating/cancelling orders
   const updateStatus = async (id, status) => {
   try {
-    const res = await fetch(`http://localhost:5000/orders/${id}/status`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/orders/${id}/status`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),

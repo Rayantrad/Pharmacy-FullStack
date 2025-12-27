@@ -15,7 +15,7 @@ function CartIcon() {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/cart/${userId}`);
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/cart/${userId}`);
       const cart = await res.json();
       const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
       setCartCount(totalQuantity);

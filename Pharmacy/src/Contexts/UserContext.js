@@ -7,7 +7,7 @@ export const UserProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      const res = await fetch("http://localhost:5000/login", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -35,7 +35,7 @@ setUser({
   };
 
   const signup = async (username, email, password) => {
-    const res = await fetch("http://localhost:5000/signup", {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, email, password }),
@@ -51,7 +51,7 @@ setUser({
     if (!confirmLogout) return; // stop if user cancels
 
     try {
-      await fetch("http://localhost:5000/logout", {
+      await fetch(`${process.env.REACT_APP_API_URL}/logout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: user.id }),

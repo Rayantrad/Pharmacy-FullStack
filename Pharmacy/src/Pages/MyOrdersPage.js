@@ -10,7 +10,7 @@ function MyOrdersPage() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await fetch("http://localhost:5000/orders");
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/orders`);
         const data = await res.json();
         setOrders(data.filter(order => order.user_id === user.id));
       } catch (err) {
@@ -23,7 +23,7 @@ function MyOrdersPage() {
   // Cancel order
   const handleCancelOrder = async (orderId) => {
     try {
-      const res = await fetch(`http://localhost:5000/orders/${orderId}`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/orders/${orderId}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -93,7 +93,7 @@ function MyOrdersPage() {
                 <button
                   onClick={async () => {
                     try {
-                      const res = await fetch(`http://localhost:5000/orders/${order.id}`, {
+                      const res = await fetch(`${process.env.REACT_APP_API_URL}/orders/${order.id}`, {
                         method: "DELETE",
                       });
                       const data = await res.json();

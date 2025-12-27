@@ -16,7 +16,7 @@ function FavouriteproductsPage() {
 
   useEffect(() => {
     const loadFavorites = () => {
-      fetch(`http://localhost:5000/favorites/${userId}`)
+      fetch(`${process.env.REACT_APP_API_URL}/favorites/${userId}`)
         .then((res) => res.json())
         .then((data) => setFavorites(data))
         .catch((err) => console.error(err));
@@ -27,7 +27,7 @@ function FavouriteproductsPage() {
     return () => {
       window.removeEventListener("favoritesUpdated", loadFavorites);
     };
-  }, []);
+  }, [userId]);
 
   return (
     <main className="container mx-auto px-4 py-8">

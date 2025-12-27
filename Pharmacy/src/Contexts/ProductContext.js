@@ -10,7 +10,7 @@ export const ProductProvider = ({ children }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("http://localhost:5000/products");
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/products`);
         const data = await res.json();
 
         const byCategory = Array.isArray(data)
@@ -37,14 +37,14 @@ export const ProductProvider = ({ children }) => {
 
   // Get one product
   const getProductDetails = async (id) => {
-    const res = await fetch(`http://localhost:5000/products/${id}`);
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/products/${id}`);
     return await res.json();
   };
 
   // Add product
   const addProduct = async (product) => {
     try {
-      const res = await fetch("http://localhost:5000/products", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product),
@@ -65,7 +65,7 @@ export const ProductProvider = ({ children }) => {
   // Update product
   const updateProduct = async (id, product) => {
     try {
-      const res = await fetch(`http://localhost:5000/products/${id}`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/products/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product),
@@ -89,7 +89,7 @@ export const ProductProvider = ({ children }) => {
   // Delete product
   const deleteProduct = async (type, id) => {
     try {
-      await fetch(`http://localhost:5000/products/${id}`, { method: "DELETE" });
+      await fetch(`${process.env.REACT_APP_API_URL}/products/${id}`, { method: "DELETE" });
 
       setAllProducts((prev) => prev.filter((p) => p.id !== id));
       setProductsByCategory((prev) => ({
@@ -104,7 +104,7 @@ export const ProductProvider = ({ children }) => {
   // ProductContext.js
 const refreshProducts = async () => {
   try {
-    const res = await fetch("http://localhost:5000/products");
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/products`);
     const data = await res.json();
     setAllProducts(data);
 

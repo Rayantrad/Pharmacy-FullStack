@@ -20,7 +20,7 @@ function CartPage() {
       window.dispatchEvent(new Event("cartUpdated"));
       return;
     }
-    fetch(`http://localhost:5000/cart/${userId}`)
+    fetch(`${process.env.REACT_APP_API_URL}/cart/${userId}`)
       .then((res) => res.json())
       .then((data) => setCartItems(data))
       .catch((err) => console.error("Error loading cart:", err));
@@ -29,7 +29,7 @@ function CartPage() {
   // Refresh cart after any update
   const refreshCart = async () => {
     if (!userId) return;
-    const res = await fetch(`http://localhost:5000/cart/${userId}`);
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/cart/${userId}`);
     const data = await res.json();
     setCartItems(data);
     window.dispatchEvent(new Event("cartUpdated")); //notify CartIcon
@@ -37,14 +37,14 @@ function CartPage() {
 
   // Remove entire item
   const handleRemove = async (id) => {
-    await fetch(`http://localhost:5000/cart/${id}`, { method: "DELETE" });
+    await fetch(`${process.env.REACT_APP_API_URL}/cart/${id}`, { method: "DELETE" });
     refreshCart();
   };
 
   //Decrease quantity 
   const handleDecreaseQuantity = async (id, quantity) => {
     if (quantity > 1) {
-      await fetch(`http://localhost:5000/cart/${id}`, {
+      await fetch(`${process.env.REACT_APP_API_URL}/cart/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ quantity: quantity - 1 }),
@@ -56,7 +56,7 @@ function CartPage() {
   // Increase quantity
   const handleIncreaseQuantity = async (id, quantity, stock) => {
     if (quantity < stock) {
-      await fetch(`http://localhost:5000/cart/${id}`, {
+      await fetch(`${process.env.REACT_APP_API_URL}/cart/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ quantity: quantity + 1 }),

@@ -12,7 +12,7 @@ function AddToCartPanel({ product }) {
   // Load current stock considering items already in cart
   useEffect(() => {
     if (product && userId) {
-      fetch(`http://localhost:5000/cart/${userId}`)
+      fetch(`${process.env.REACT_APP_API_URL}/cart/${userId}`)
         .then((res) => res.json())
         .then((cart) => {
           const existingItem = cart.find(
@@ -42,7 +42,7 @@ function AddToCartPanel({ product }) {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/cart", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/cart`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -59,7 +59,7 @@ function AddToCartPanel({ product }) {
       }
 
       // Refresh cart info
-      const cartRes = await fetch(`http://localhost:5000/cart/${userId}`);
+      const cartRes = await fetch(`${process.env.REACT_APP_API_URL}/cart/${userId}`);
       const cart = await cartRes.json();
       const existingItem = cart.find((item) => item.product_id === product.id);
       const usedStock = existingItem ? existingItem.quantity : 0;

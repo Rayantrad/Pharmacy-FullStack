@@ -8,7 +8,7 @@ function FavoriteButton({ product, className }) {
   const userId = user?.id;
 
   useEffect(() => {
-    fetch(`http://localhost:5000/favorites/${userId}`)
+    fetch(`${process.env.REACT_APP_API_URL}/favorites/${userId}`)
       .then((res) => res.json())
       .then((data) => {
         const exists = data.some(
@@ -23,14 +23,14 @@ function FavoriteButton({ product, className }) {
     if (isFavorited) {
       // Frontend
       await fetch(
-  `http://localhost:5000/favorites/${userId}/${product.id}/${product.type}`,
+  `${process.env.REACT_APP_API_URL}/favorites/${userId}/${product.id}/${product.type}`,
   {
     method: "DELETE",
   }
 );
 setIsFavorited(false);
     } else {
-      await fetch("http://localhost:5000/favorites", {
+      await fetch(`${process.env.REACT_APP_API_URL}/favorites`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
