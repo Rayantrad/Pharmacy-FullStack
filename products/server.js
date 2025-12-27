@@ -1,5 +1,5 @@
 import express from "express";
-import mysql from "mysql2/promise";
+import mysql from "mysql2";
 
 import cors from "cors";
 import bcrypt from "bcrypt"; // for password hashing
@@ -156,15 +156,15 @@ const db = mysql.createPool({
 
 
 // Test connection once at startup
-(async () => {
-  try {
-    const connection = await db.getConnection();
-    console.log(" Connected to MySQL database:", process.env.MYSQLDATABASE);
-    connection.release();
-  } catch (err) {
-    console.error(" Database connection failed:", err.stack);
+db.getConnection((err, connection) => {
+  if (err) {
+    console.error("Database connection failed:", err.stack);
+    return;
   }
-})();
+  console.log("Connected to MySQL database:", process.env.MYSQLDATABASE);
+  connection.release();
+});
+
 
 
 
