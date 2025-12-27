@@ -3,8 +3,10 @@ import mysql from "mysql";
 import cors from "cors";
 import bcrypt from "bcrypt"; // for password hashing
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
-require("dotenv").config();
+dotenv.config();
+
 function getEmailContent(username, orderNumber, status) {
   let subject = "CarePharma Order Update";
   let textMessage = "";
@@ -143,8 +145,6 @@ app.use(
 
 app.use(express.json());
 
-const mysql = require("mysql2/promise");
-
 const db = mysql.createPool({
   host: process.env.MYSQLHOST,
   port: process.env.MYSQLPORT || 3306,
@@ -154,14 +154,17 @@ const db = mysql.createPool({
 });
 
 
-// Connect to MySQL
-db.connect((err) => {
+// Test connection once at startup
+db.getConnection((err, connection) => {
   if (err) {
     console.error("Database connection failed:", err.stack);
     return;
   }
   console.log("Connected to MySQL database.");
+  connection.release();
 });
+
+
 
 // Get all products
 app.get("/products", (req, res) => {
