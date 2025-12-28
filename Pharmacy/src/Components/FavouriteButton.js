@@ -6,73 +6,43 @@ function FavoriteButton({ product, className }) {
   const [isFavorited, setIsFavorited] = useState(false);
   const { user } = useAuth();
   const userId = user?.id;
-  const API = process.env.REACT_APP_API_URL;
 
-  // Fetch once per user, not per product
   useEffect(() => {
-    if (!userId || !API) return;
-
-    const fetchFavorites = async () => {
-      try {
-        const res = await fetch(`${API}/favorites/${userId}`);
-        if (!res.ok) throw new Error(`Server error: ${res.status}`);
-        const data = await res.json();
-
-        const exists =
-          Array.isArray(data) &&
-          data.some(
-            (item) =>
-              String(item.product_id) === String(product.id) &&
-              String(item.type) === String(product.type)
-          );
-
+    fetch(`${process.env.REACT_APP_API_URL}/favorites/${userId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const exists = data.some(
+          (item) => item.product_id === product.id && item.type === product.type
+        );
         setIsFavorited(exists);
-      } catch (err) {
-        console.error("Favorites fetch error:", err);
-      }
-    };
-
-    fetchFavorites();
-  }, [userId]); // only depend on userId
+      })
+      .catch((err) => console.error(err));
+  }, [product]);
 
   const toggleFavorite = async () => {
-    if (!userId || !API) return;
-
-    const pid = String(product.id);
-    const ptype = String(product.type);
-
     if (isFavorited) {
-      // Optimistic update: change UI immediately
-      setIsFavorited(false);
-      try {
-        const res = await fetch(`${API}/favorites/${userId}/${pid}/${ptype}`, {
-          method: "DELETE",
-        });
-        if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
-      } catch (err) {
-        console.error("Failed to remove favorite:", err);
-        setIsFavorited(true); // rollback if server fails
-      }
+      // Frontend
+      await fetch(
+  `${process.env.REACT_APP_API_URL}/favorites/${userId}/${product.id}/${product.type}`,
+  {
+    method: "DELETE",
+  }
+);
+setIsFavorited(false);
     } else {
-      // Optimistic update: change UI immediately
+      await fetch(`${process.env.REACT_APP_API_URL}/favorites`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          product_id: product.id,
+          type: product.type,
+        }),
+      });
       setIsFavorited(true);
-      try {
-        const res = await fetch(`${API}/favorites`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_id: userId,
-            product_id: pid,
-            type: ptype,
-          }),
-        });
-        if (!res.ok) throw new Error(`Post failed: ${res.status}`);
-      } catch (err) {
-        console.error("Failed to add favorite:", err);
-        setIsFavorited(false); // rollback if server fails
-      }
     }
 
+    // Notify other components
     window.dispatchEvent(new Event("favoritesUpdated"));
   };
 
