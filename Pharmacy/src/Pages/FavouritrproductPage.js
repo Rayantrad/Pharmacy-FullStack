@@ -9,17 +9,24 @@ function FavouriteproductsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const userId = user?.id;
+  const API = process.env.REACT_APP_API_URL; // ✅ define API here
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
-    const loadFavorites = () => {
-      fetch(`${process.env.REACT_APP_API_URL}/favorites/${userId}`)
-        .then((res) => res.json())
-        .then((data) => setFavorites(data))
-        .catch((err) => console.error(err));
+    if (!userId || !API) return;
+
+    const loadFavorites = async () => {
+      try {
+        const res = await fetch(`${API}/favorites/${userId}`);
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const data = await res.json();
+        setFavorites(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to load favorites:", err);
+      }
     };
 
     loadFavorites();
@@ -27,11 +34,10 @@ function FavouriteproductsPage() {
     return () => {
       window.removeEventListener("favoritesUpdated", loadFavorites);
     };
-  }, [userId]);
+  }, [userId, API]);
 
   return (
     <main className="container mx-auto px-4 py-8">
-      {/* Go Back Button */}
       <button
         onClick={() => navigate(-1)}
         className="mb-6 inline-flex items-center gap-2 text-sm font-semibold cursor-pointer text-blue-600 hover:text-white hover:bg-blue-600 border border-blue-600 px-4 py-2 rounded-full transition-all duration-300"
