@@ -8,7 +8,6 @@ function FavoriteButton({ product, className }) {
   const userId = user?.id;
 
   useEffect(() => {
-    // Only run if we have a valid userId
     if (!userId) return;
 
     const fetchFavorites = async () => {
@@ -29,28 +28,44 @@ function FavoriteButton({ product, className }) {
     };
 
     fetchFavorites();
-  }, [product, userId]); // depend on userId too
+  }, [product, userId]);
 
   const toggleFavorite = async () => {
-    if (!userId) return; // guard again
+    if (!userId) return;
 
     if (isFavorited) {
-      await fetch(
-        `${process.env.REACT_APP_API_URL}/favorites/${userId}/${product.id}/${product.type}`,
-        { method: "DELETE" }
-      );
+      // Optimistic update: change UI immediately
       setIsFavorited(false);
+
+      try {
+        await fetch(
+          `${process.env.REACT_APP_API_URL}/favorites/${userId}/${product.id}/${product.type}`,
+          { method: "DELETE" }
+        );
+      } catch (err) {
+        console.error("Failed to remove favorite:", err);
+        // rollback if server fails
+        setIsFavorited(true);
+      }
     } else {
-      await fetch(`${process.env.REACT_APP_API_URL}/favorites`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: userId,
-          product_id: product.id,
-          type: product.type,
-        }),
-      });
+      // Optimistic update: change UI immediately
       setIsFavorited(true);
+
+      try {
+        await fetch(`${process.env.REACT_APP_API_URL}/favorites`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: userId,
+            product_id: product.id,
+            type: product.type,
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to add favorite:", err);
+        // rollback if server fails
+        setIsFavorited(false);
+      }
     }
 
     window.dispatchEvent(new Event("favoritesUpdated"));
