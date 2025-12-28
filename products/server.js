@@ -107,15 +107,30 @@ function getEmailContent(username, orderNumber, status) {
 }
 
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // true for 465, false for 587
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS
-  }
-});
+let transporter;
+
+try {
+  // Try Gmail first
+  transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_PASS
+    }
+  });
+} catch (err) {
+  // Fallback to SendGrid if Gmail fails
+  transporter = nodemailer.createTransport({
+    service: "SendGrid",
+    auth: {
+      user: "apikey",
+      pass: process.env.SENDGRID_API_KEY
+    }
+  });
+}
+
 function sendNotificationEmail(to, subject, message, htmlMessage) {
   const mailOptions = {
     from: process.env.GMAIL_USER,
