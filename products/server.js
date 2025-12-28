@@ -172,7 +172,7 @@ app.use(express.json());
 
 
 // Create connection using environment variables
-const connection = mysql.createConnection({
+const db = mysql.createConnection({
   host: process.env.DB_HOST,      
   user: process.env.DB_USER,       
   password: process.env.DB_PASSWORD, 
@@ -181,25 +181,13 @@ const connection = mysql.createConnection({
   
 });
 
-connection.connect(err => {
+db.connect(err => {
   if (err) {
     console.error('MySQL connection error:', err.message);
     return;
   }
   console.log('Connected to MySQL');
 });
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
