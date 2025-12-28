@@ -108,16 +108,17 @@ function getEmailContent(username, orderNumber, status) {
 
 
 const transporter = nodemailer.createTransport({
-  service: "gmail", 
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // true for 465, false for 587
   auth: {
-    user: "rayan.trad2005@gmail.com",
-    pass: "uqzj zywf prng mvvl"
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS
   }
 });
-
 function sendNotificationEmail(to, subject, message, htmlMessage) {
   const mailOptions = {
-    from: "rayan.trad2005@gmail.com",
+    from: process.env.GMAIL_USER,
     to,
     subject,
     text: message,     // fallback for clients that don’t support HTML
@@ -140,14 +141,6 @@ app.use(express.json());
 
 
 
-app.use((err, req, res, next) => {
-  console.error("❌ Uncaught error:", err.stack);
-  res.status(500).json({ error: "Internal server error", details: err.message });
-});
-
-
-
-
 // Enable CORS
 app.use(
   cors({
@@ -160,26 +153,6 @@ app.use(
   })
 );
 
-
-
-// const db = mysql.createPool({
-//   host: process.env.MYSQLHOST,
-//   port: process.env.MYSQLPORT || 3306,
-//   user: process.env.MYSQLUSER,
-//   password: process.env.MYSQLPASSWORD,
-//   database: process.env.MYSQLDATABASE,
-// });
-
-
-// // Test connection once at startup
-// db.getConnection((err, connection) => {
-//   if (err) {
-//     console.error("Database connection failed:", err.stack);
-//     return;
-//   }
-//   console.log("Connected to MySQL database:", process.env.MYSQLDATABASE);
-//   connection.release();
-// });
 
 
 // Create connection using environment variables
