@@ -59,9 +59,7 @@ const router = createBrowserRouter(
       ],
     },
   ],
-  {
-    basename: "/Pharmacy",
-  }
+ 
 );
 
 function App() {

@@ -6,7 +6,11 @@ import bcrypt from "bcrypt"; // for password hashing
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 
-dotenv.config();
+// Load .env only in local dev
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config();
+}
+
 
 function getEmailContent(username, orderNumber, status) {
   let subject = "CarePharma Order Update";
@@ -130,6 +134,7 @@ function sendNotificationEmail(to, subject, message, htmlMessage) {
 }
 
 
+
 const app = express();
 
 // Enable CORS
@@ -166,6 +171,8 @@ db.getConnection((err, connection) => {
 });
 
 
+// Health route
+app.get("/health", (req, res) => res.send("OK"));
 
 
 
@@ -621,4 +628,8 @@ app.delete("/orders/:id", (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(` Server running on port ${PORT}`);
+});
+
+app.get("/ping", (req, res) => {
+  res.json({ message: "✅ Backend is alive!" });
 });
