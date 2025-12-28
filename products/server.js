@@ -12,6 +12,10 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 
+
+
+
+
 function getEmailContent(username, orderNumber, status) {
   let subject = "CarePharma Order Update";
   let textMessage = "";
@@ -136,6 +140,8 @@ function sendNotificationEmail(to, subject, message, htmlMessage) {
 
 
 const app = express();
+app.use(express.json());
+
 
 // Enable CORS
 app.use(
@@ -149,7 +155,7 @@ app.use(
   })
 );
 
-app.use(express.json());
+
 
 // const db = mysql.createPool({
 //   host: process.env.MYSQLHOST,
@@ -172,22 +178,22 @@ app.use(express.json());
 
 
 // Create connection using environment variables
-const db = mysql.createConnection({
-  host: process.env.MYSQLHOST || process.env.DB_HOST,
-  user: process.env.MYSQLUSER || process.env.DB_USER,
-  password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD,
-  database: process.env.MYSQLDATABASE || process.env.DB_NAME,
-  port: process.env.MYSQLPORT || process.env.DB_PORT || 3306
-
+const db = mysql.createPool({
+  host: process.env.MYSQLHOST,
+user: process.env.MYSQLUSER,
+password: process.env.MYSQLPASSWORD,
+database: process.env.MYSQLDATABASE,
+port: process.env.MYSQLPORT || 3306
 });
 
 
-db.connect(err => {
+db.getConnection((err, connection) => {
   if (err) {
-    console.error('MySQL connection error:', err.message);
+    console.error("Database connection failed:", err.message);
     return;
   }
-  console.log('Connected to MySQL');
+  console.log(" Connected to MySQL database:", process.env.MYSQLDATABASE);
+  connection.release();
 });
 
 
