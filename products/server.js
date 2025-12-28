@@ -142,7 +142,7 @@ app.use(
   cors({
     origin: [
     "http://localhost:3000", 
-    "https://frontend-production-ad9a.up.railway.app"
+    "https://pharmacy-frontend-hsql.onrender.com"
   ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
