@@ -151,24 +151,57 @@ app.use(
 
 app.use(express.json());
 
-const db = mysql.createPool({
-  host: process.env.MYSQLHOST,
-  port: process.env.MYSQLPORT || 3306,
-  user: process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQLDATABASE
+// const db = mysql.createPool({
+//   host: process.env.MYSQLHOST,
+//   port: process.env.MYSQLPORT || 3306,
+//   user: process.env.MYSQLUSER,
+//   password: process.env.MYSQLPASSWORD,
+//   database: process.env.MYSQLDATABASE,
+// });
+
+
+// // Test connection once at startup
+// db.getConnection((err, connection) => {
+//   if (err) {
+//     console.error("Database connection failed:", err.stack);
+//     return;
+//   }
+//   console.log("Connected to MySQL database:", process.env.MYSQLDATABASE);
+//   connection.release();
+// });
+
+
+// Create connection using environment variables
+const connection = mysql.createConnection({
+  host: process.env.DB_HOST,      
+  user: process.env.DB_USER,       
+  password: process.env.DB_PASSWORD, 
+  database: process.env.DB_NAME,   
+  port: process.env.DB_PORT || 3306,
+  
 });
 
-
-// Test connection once at startup
-db.getConnection((err, connection) => {
+connection.connect(err => {
   if (err) {
-    console.error("Database connection failed:", err.stack);
+    console.error('MySQL connection error:', err.message);
     return;
   }
-  console.log("Connected to MySQL database:", process.env.MYSQLDATABASE);
-  connection.release();
+  console.log('Connected to MySQL');
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Health route
