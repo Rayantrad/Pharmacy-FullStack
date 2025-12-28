@@ -27,7 +27,7 @@ function FavouriteproductsPage() {
     return () => {
       window.removeEventListener("favoritesUpdated", loadFavorites);
     };
-  }, []);
+  }, [userId]);
 
   return (
     <main className="container mx-auto px-4 py-8">
