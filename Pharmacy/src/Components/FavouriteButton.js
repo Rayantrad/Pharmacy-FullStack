@@ -8,27 +8,38 @@ function FavoriteButton({ product, className }) {
   const userId = user?.id;
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/favorites/${userId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        const exists = data.some(
-          (item) => item.product_id === product.id && item.type === product.type
-        );
-        setIsFavorited(exists);
-      })
-      .catch((err) => console.error(err));
-  }, [product]);
+    // Only run if we have a valid userId
+    if (!userId) return;
+
+    const fetchFavorites = async () => {
+      try {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/favorites/${userId}`);
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          const exists = data.some(
+            (item) => item.product_id === product.id && item.type === product.type
+          );
+          setIsFavorited(exists);
+        }
+      } catch (err) {
+        console.error("Favorites fetch error:", err);
+      }
+    };
+
+    fetchFavorites();
+  }, [product, userId]); // depend on userId too
 
   const toggleFavorite = async () => {
+    if (!userId) return; // guard again
+
     if (isFavorited) {
-      // Frontend
       await fetch(
-  `${process.env.REACT_APP_API_URL}/favorites/${userId}/${product.id}/${product.type}`,
-  {
-    method: "DELETE",
-  }
-);
-setIsFavorited(false);
+        `${process.env.REACT_APP_API_URL}/favorites/${userId}/${product.id}/${product.type}`,
+        { method: "DELETE" }
+      );
+      setIsFavorited(false);
     } else {
       await fetch(`${process.env.REACT_APP_API_URL}/favorites`, {
         method: "POST",
@@ -42,7 +53,6 @@ setIsFavorited(false);
       setIsFavorited(true);
     }
 
-    // Notify other components
     window.dispatchEvent(new Event("favoritesUpdated"));
   };
 
