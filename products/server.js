@@ -12,10 +12,6 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 
-
-
-
-
 function getEmailContent(username, orderNumber, status) {
   let subject = "CarePharma Order Update";
   let textMessage = "";
@@ -141,6 +137,15 @@ function sendNotificationEmail(to, subject, message, htmlMessage) {
 
 const app = express();
 app.use(express.json());
+
+
+
+app.use((err, req, res, next) => {
+  console.error("❌ Uncaught error:", err.stack);
+  res.status(500).json({ error: "Internal server error", details: err.message });
+});
+
+
 
 
 // Enable CORS
@@ -404,7 +409,11 @@ app.post("/login", (req, res) => {
 
   const q = "SELECT * FROM users WHERE username = ?";
   db.query(q, [username], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
+    if (err) {
+    console.error(" Login DB error:", err); // full error object
+    return res.status(500).json({ error: "Database query failed" });
+  }
+
     if (rows.length === 0) {
       return res.status(401).json({ error: "Invalid username or password" });
     }
