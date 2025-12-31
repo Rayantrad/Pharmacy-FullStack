@@ -5,6 +5,7 @@ CarePharma is a web-based platform for managing pharmaceutical workflows.
 It integrates **Express.js (backend)**, **React (frontend)**, and **MySQL (database)** with secure deployment on **Railway/Render**.  
 The system emphasizes **authentication**, **notification delivery**, and **scalable architecture**.
 
+Production link: https://pharmacy-frontend-hsql.onrender.com/
 
 ## Tech Stack
 - **Frontend:** React  
@@ -64,34 +65,6 @@ npm start
 
 ---
 
-## ⚡ Quick Start (Run in 5 Minutes)
-
-1. **Clone repo & install dependencies**
-   ```bash
-   git clone https://github.com/<your-username>/carepharma.git
-   cd carepharma/backend && npm install
-   cd ../frontend && npm install
-   ```
-
-2. **Set up database**
-   - Install MySQL locally.  
-   - Create database `pharmacy`.  
-   - Add `.env` file in backend with local DB credentials.
-
-3. **Run backend**
-   ```bash
-   cd backend
-   npm run dev
-   ```
-
-4. **Run frontend**
-   ```bash
-   cd frontend
-   npm start
-   ```
-
-
----
 
 ## 🚀 Deployment
 - Deploy backend & frontend separately on **Railway/Render**.  
